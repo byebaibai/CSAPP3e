@@ -207,7 +207,7 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return (y ^ z) ^ (y & ~!(x & (~0))) ^ (z & ~(x & (~0)));
+  return (y ^ z) ^ (y & ((!x << 31) >> 31)) ^ (z & ~((!x << 31) >> 31));
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -217,7 +217,12 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+    return conditional(((unsigned)y >> 31) ^ ((unsigned)x >> 31),
+                     conditional((y >> 31) & 1, 0, 1),
+                     conditional(!(x ^ (1 << 31)),
+                                 1,
+                                 !(((y + (~x + 1)) >> 31) & 1))
+                        );
 }
 //4
 /* 
@@ -229,7 +234,14 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  return (~x & 1) & (~x >> 1 & 1) & (~x >> 2 & 1) & (~x >> 3 & 1) &
+         (~x >> 4 & 1) & (~x >> 5 & 1) & (~x >> 6 & 1) & (~x >> 7 & 1) &
+          (~x >> 8 & 1) & (~x >> 9 & 1) & (~x >> 10 & 1) & (~x >> 11 & 1) &
+          (~x >> 12 & 1) & (~x >> 13 & 1) & (~x >> 14 & 1) & (~x >> 15 & 1) &
+          (~x >> 16 & 1) & (~x >> 17 & 1) & (~x >> 18 & 1) & (~x >> 19 & 1) &
+          (~x >> 20 & 1) & (~x >> 21 & 1) & (~x >> 22 & 1) & (~x >> 23 & 1) &
+          (~x >> 24 & 1) & (~x >> 25 & 1) & (~x >> 26 & 1) & (~x >> 27 & 1) &
+          (~x >> 28 & 1) & (~x >> 29 & 1) & (~x >> 30 & 1) & (~x >> 31 & 1);
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
