@@ -173,7 +173,7 @@ int isTmax(int x) {
  *   Max ops: 12
  *   Rating: 2
  */
-int allOddBits(int x) {
+int allOddBits(int x) { // TODO
   return !((x & 0xAAAAAAAA) ^ 0xAAAAAAAA);
 }
 /* 
@@ -256,7 +256,67 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+    return conditional(((x >> 31) & 1) ^ ((x >> 30) & 1), 32, conditional(
+            ((x >> 30) & 1) ^ ((x >> 29) & 1), 31, conditional(
+                    ((x >> 29) & 1) ^ ((x >> 28) & 1), 30, conditional(
+                            ((x >> 28) & 1) ^ ((x >> 27) & 1), 29, conditional(
+                                    ((x >> 27) & 1) ^ ((x >> 26) & 1), 28, conditional(
+                                            ((x >> 26) & 1) ^ ((x >> 25) & 1), 27, conditional(
+                                                    ((x >> 25) & 1) ^ ((x >> 24) & 1), 26, conditional(
+                                                            ((x >> 24) & 1) ^ ((x >> 23) & 1), 25, conditional(
+                                                                    ((x >> 23) & 1) ^ ((x >> 22) & 1), 24, conditional(
+                                                                            ((x >> 22) & 1) ^ ((x >> 21) & 1), 23, conditional(
+                                                                                    ((x >> 21) & 1) ^ ((x >> 20) & 1), 22, conditional(
+                                                                                            ((x >> 20) & 1) ^ ((x >> 19) & 1), 21, conditional(
+                                                                                                    ((x >> 19) & 1) ^ ((x >> 18) & 1), 20, conditional(
+                                                                                                            ((x >> 18) & 1) ^ ((x >> 17) & 1), 19, conditional(
+                                                                                                                    ((x >> 17) & 1) ^ ((x >> 16) & 1), 18, conditional(
+                                                                                                                            ((x >> 16) & 1) ^ ((x >> 15) & 1), 17, conditional(
+                                                                                                                                    ((x >> 15) & 1) ^ ((x >> 14) & 1), 16, conditional(
+                                                                                                                                            ((x >> 14) & 1) ^ ((x >> 13) & 1), 15, conditional(
+                                                                                                                                                    ((x >> 13) & 1) ^ ((x >> 12) & 1), 14, conditional(
+                                                                                                                                                            ((x >> 12) & 1) ^ ((x >> 11) & 1), 13, conditional(
+                                                                                                                                                                    ((x >> 11) & 1) ^ ((x >> 10) & 1), 12, conditional(
+                                                                                                                                                                            ((x >> 10) & 1) ^ ((x >> 9) & 1), 11, conditional(
+                                                                                                                                                                                    ((x >> 9) & 1) ^ ((x >> 8) & 1), 10, conditional(
+                                                                                                                                                                                            ((x >> 8) & 1) ^ ((x >> 7) & 1), 9, conditional(
+                                                                                                                                                                                                    ((x >> 7) & 1) ^ ((x >> 6) & 1), 8, conditional(
+                                                                                                                                                                                                            ((x >> 6) & 1) ^ ((x >> 5) & 1), 7, conditional(
+                                                                                                                                                                                                                    ((x >> 5) & 1) ^ ((x >> 4) & 1), 6, conditional(
+                                                                                                                                                                                                                            ((x >> 4) & 1) ^ ((x >> 3) & 1), 5, conditional(
+                                                                                                                                                                                                                                    ((x >> 3) & 1) ^ ((x >> 2) & 1), 4, conditional(
+                                                                                                                                                                                                                                            ((x >> 2) & 1) ^ ((x >> 1) & 1), 3, conditional(
+                                                                                                                                                                                                                                                    ((x >> 1) & 1) ^ (x & 1), 2, 1
+                                                                                                                                                                                                                                            )
+                                                                                                                                                                                                                                    )
+                                                                                                                                                                                                                            )
+                                                                                                                                                                                                                    )
+                                                                                                                                                                                                            )
+                                                                                                                                                                                                    )
+                                                                                                                                                                                            )
+                                                                                                                                                                                    )
+                                                                                                                                                                            )
+                                                                                                                                                                    )
+                                                                                                                                                            )
+                                                                                                                                                    )
+                                                                                                                                            )
+                                                                                                                                    )
+                                                                                                                            )
+                                                                                                                    )
+                                                                                                            )
+                                                                                                    )
+                                                                                            )
+                                                                                    )
+                                                                            )
+                                                                    )
+                                                            )
+                                                    )
+                                            )
+                                    )
+                            )
+                    )
+            )
+    ));
 }
 //float
 /* 
@@ -271,7 +331,37 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+    unsigned result = 0;
+	
+    unsigned sign = ((uf >> 31) & 1) << 31;
+    unsigned frac;
+    unsigned exp;
+
+	if( !((uf << 1) >> 1) ){
+		result |= sign;
+		return result;
+	}
+
+	if( !( ((uf << 1) >> 24) ^ 0xFF )){
+		exp = ((uf << 1) >> 24) << 23;
+		frac = ((uf << 9) >> 9);
+	}else if( ((uf << 1) >> 24) ){
+    	exp = ( ((uf << 1) >> 24) + 1) << 23;
+		frac = ((uf << 9) >> 9);
+    }else {
+		if((uf >> 22) & 1){
+			exp = 1 << 23;
+		}else{
+			exp = 0;
+		}
+		frac = ((uf << 10) >> 9);
+	}
+        
+    result |= sign;
+    result |= frac;
+    result |= exp;
+        
+    return result;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
