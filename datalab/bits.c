@@ -376,7 +376,33 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+	int sign = (uf >> 31) & 1;
+	int exp = (uf << 1) >> 24;
+	int frac = (uf << 9) >> 9;
+	int flag, E, M = 1, t = 1;
+
+	if(sign){
+		flag = -1;
+	}else{
+		flag = 1;
+	}
+	
+	E = exp - 127;
+	if(E < 0){
+		M = 0;
+	}
+	while( E > 0 && t <= 23){
+		M = (1 << t) | (frac >> (23 - t));
+		t = t + 1;
+		E = E - 1;
+	}
+	if(E > 8){
+		return (1 << 31);
+	}else{
+		M = M << E;
+	}
+
+	return flag * M;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -392,5 +418,22 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+	int sign = 0;
+	int frac = 0;
+	int exp;
+	unsigned result = 0;
+
+	exp = 127 + x;
+	if(exp > 255){
+		return (0xFF << 23);
+	}else if (exp < 0) {
+		return 0;
+	}
+	exp = exp << 23;
+	
+	result |= sign;
+	result |= exp;
+	result |= frac;
+
+    return result;
 }
