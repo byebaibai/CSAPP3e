@@ -143,7 +143,7 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return ~(x & y) & ~(~x & ~y);
+	return ~(x & y) & ~(~x & ~y);
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -152,7 +152,7 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-  return 1 << 31;
+	return 1 << 31;
 }
 //2
 /*
@@ -163,7 +163,7 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return !(x ^ (~(1 << 31)));
+	return !((x + 1) ^ (~x)) & !!(x ^ (~0));
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -173,8 +173,8 @@ int isTmax(int x) {
  *   Max ops: 12
  *   Rating: 2
  */
-int allOddBits(int x) { // TODO
-  return !((x & 0xAAAAAAAA) ^ 0xAAAAAAAA);
+int allOddBits(int x) {
+	return !((x & (x >> 8) & (x >> 16) & (x >> 24) & 0xAA) ^ (0xAA));
 }
 /* 
  * negate - return -x 
@@ -184,7 +184,7 @@ int allOddBits(int x) { // TODO
  *   Rating: 2
  */
 int negate(int x) {
-  return ~x + 1;
+	return ~x + 1;
 }
 //3
 /* 
@@ -197,7 +197,7 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-    return !(x >> 6) & !((x & 0x30) ^ 0x30) & !!((x & 0xA) ^ 0xA) & !!((x & 0xC) ^ 0xC);
+    return !(x >> 6) & !((x & 0x30) ^ 0x30) & !(!((x & 0xA) ^ 0xA) | !((x & 0xC) ^ 0xC));
 }
 /* 
  * conditional - same as x ? y : z 
@@ -207,7 +207,7 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return (y ^ z) ^ (y & ((!x << 31) >> 31)) ^ (z & ~((!x << 31) >> 31));
+	return (y ^ z) ^ (y & ((!x << 31) >> 31)) ^ (z & ~((!x << 31) >> 31));
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -217,12 +217,9 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-    return conditional(((unsigned)y >> 31) ^ ((unsigned)x >> 31),
-                     conditional((y >> 31) & 1, 0, 1),
-                     conditional(!(x ^ (1 << 31)),
-                                 1,
-                                 !(((y + (~x + 1)) >> 31) & 1))
-                        );
+	return (((~((y + ~x + 1)) ^ 
+				(~((y ^ (~x + 1))) & ((y ^ (y + (~x + 1)))))) >> 31) & 1)
+			| !((x ^ (~x + 1)) | !x);
 }
 //4
 /* 
@@ -234,14 +231,11 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return (~x & 1) & (~x >> 1 & 1) & (~x >> 2 & 1) & (~x >> 3 & 1) &
-         (~x >> 4 & 1) & (~x >> 5 & 1) & (~x >> 6 & 1) & (~x >> 7 & 1) &
-          (~x >> 8 & 1) & (~x >> 9 & 1) & (~x >> 10 & 1) & (~x >> 11 & 1) &
-          (~x >> 12 & 1) & (~x >> 13 & 1) & (~x >> 14 & 1) & (~x >> 15 & 1) &
-          (~x >> 16 & 1) & (~x >> 17 & 1) & (~x >> 18 & 1) & (~x >> 19 & 1) &
-          (~x >> 20 & 1) & (~x >> 21 & 1) & (~x >> 22 & 1) & (~x >> 23 & 1) &
-          (~x >> 24 & 1) & (~x >> 25 & 1) & (~x >> 26 & 1) & (~x >> 27 & 1) &
-          (~x >> 28 & 1) & (~x >> 29 & 1) & (~x >> 30 & 1) & (~x >> 31 & 1);
+	int low16 = x | (x >> 16);
+	int low8 = low16 | (low16 >> 8);
+	int low4 = low8 | (low8 >> 4);
+	int low2 = low4 | (low4 >> 2);
+	return ~(low2 | (low2 >> 1)) & 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -256,67 +250,28 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-    return conditional(((x >> 31) & 1) ^ ((x >> 30) & 1), 32, conditional(
-            ((x >> 30) & 1) ^ ((x >> 29) & 1), 31, conditional(
-                    ((x >> 29) & 1) ^ ((x >> 28) & 1), 30, conditional(
-                            ((x >> 28) & 1) ^ ((x >> 27) & 1), 29, conditional(
-                                    ((x >> 27) & 1) ^ ((x >> 26) & 1), 28, conditional(
-                                            ((x >> 26) & 1) ^ ((x >> 25) & 1), 27, conditional(
-                                                    ((x >> 25) & 1) ^ ((x >> 24) & 1), 26, conditional(
-                                                            ((x >> 24) & 1) ^ ((x >> 23) & 1), 25, conditional(
-                                                                    ((x >> 23) & 1) ^ ((x >> 22) & 1), 24, conditional(
-                                                                            ((x >> 22) & 1) ^ ((x >> 21) & 1), 23, conditional(
-                                                                                    ((x >> 21) & 1) ^ ((x >> 20) & 1), 22, conditional(
-                                                                                            ((x >> 20) & 1) ^ ((x >> 19) & 1), 21, conditional(
-                                                                                                    ((x >> 19) & 1) ^ ((x >> 18) & 1), 20, conditional(
-                                                                                                            ((x >> 18) & 1) ^ ((x >> 17) & 1), 19, conditional(
-                                                                                                                    ((x >> 17) & 1) ^ ((x >> 16) & 1), 18, conditional(
-                                                                                                                            ((x >> 16) & 1) ^ ((x >> 15) & 1), 17, conditional(
-                                                                                                                                    ((x >> 15) & 1) ^ ((x >> 14) & 1), 16, conditional(
-                                                                                                                                            ((x >> 14) & 1) ^ ((x >> 13) & 1), 15, conditional(
-                                                                                                                                                    ((x >> 13) & 1) ^ ((x >> 12) & 1), 14, conditional(
-                                                                                                                                                            ((x >> 12) & 1) ^ ((x >> 11) & 1), 13, conditional(
-                                                                                                                                                                    ((x >> 11) & 1) ^ ((x >> 10) & 1), 12, conditional(
-                                                                                                                                                                            ((x >> 10) & 1) ^ ((x >> 9) & 1), 11, conditional(
-                                                                                                                                                                                    ((x >> 9) & 1) ^ ((x >> 8) & 1), 10, conditional(
-                                                                                                                                                                                            ((x >> 8) & 1) ^ ((x >> 7) & 1), 9, conditional(
-                                                                                                                                                                                                    ((x >> 7) & 1) ^ ((x >> 6) & 1), 8, conditional(
-                                                                                                                                                                                                            ((x >> 6) & 1) ^ ((x >> 5) & 1), 7, conditional(
-                                                                                                                                                                                                                    ((x >> 5) & 1) ^ ((x >> 4) & 1), 6, conditional(
-                                                                                                                                                                                                                            ((x >> 4) & 1) ^ ((x >> 3) & 1), 5, conditional(
-                                                                                                                                                                                                                                    ((x >> 3) & 1) ^ ((x >> 2) & 1), 4, conditional(
-                                                                                                                                                                                                                                            ((x >> 2) & 1) ^ ((x >> 1) & 1), 3, conditional(
-                                                                                                                                                                                                                                                    ((x >> 1) & 1) ^ (x & 1), 2, 1
-                                                                                                                                                                                                                                            )
-                                                                                                                                                                                                                                    )
-                                                                                                                                                                                                                            )
-                                                                                                                                                                                                                    )
-                                                                                                                                                                                                            )
-                                                                                                                                                                                                    )
-                                                                                                                                                                                            )
-                                                                                                                                                                                    )
-                                                                                                                                                                            )
-                                                                                                                                                                    )
-                                                                                                                                                            )
-                                                                                                                                                    )
-                                                                                                                                            )
-                                                                                                                                    )
-                                                                                                                            )
-                                                                                                                    )
-                                                                                                            )
-                                                                                                    )
-                                                                                            )
-                                                                                    )
-                                                                            )
-                                                                    )
-                                                            )
-                                                    )
-                                            )
-                                    )
-                            )
-                    )
-            )
-    ));
+   int b16, b8, b4, b2, b1, b0;
+   int sign = x >> 31;
+   x = (sign & ~x) | (~sign & x);
+
+   b16 = !!(x >> 16) << 4;
+   x = x >> b16;
+
+   b8 = !!(x >> 8) << 3;
+   x = x >> b8;
+
+   b4 = !!(x >> 4) << 2;
+   x = x >> b4;
+
+   b2 = !!(x >> 2) << 1;
+   x = x >> b2;
+
+   b1 = !!(x >> 1);
+   x = x >> b1;
+
+   b0 = x;
+
+   return b16 + b8 + b4 + b2 + b1 + b0 + 1;
 }
 //float
 /* 
@@ -332,21 +287,21 @@ int howManyBits(int x) {
  */
 unsigned floatScale2(unsigned uf) {
     unsigned result = 0;
-	
     unsigned sign = ((uf >> 31) & 1) << 31;
     unsigned frac;
     unsigned exp;
 
+	result |= sign;
 	if( !((uf << 1) >> 1) ){
-		result |= sign;
 		return result;
 	}
 
-	if( !( ((uf << 1) >> 24) ^ 0xFF )){
-		exp = ((uf << 1) >> 24) << 23;
-		frac = ((uf << 9) >> 9);
-	}else if( ((uf << 1) >> 24) ){
-    	exp = ( ((uf << 1) >> 24) + 1) << 23;
+	if( ((uf << 1) >> 24) ){
+		if( !( ((uf << 1) >> 24) ^ 0xFF )){
+			exp = ((uf << 1) >> 24) << 23;
+		}else{
+			exp = ( ((uf << 1) >> 24) + 1) << 23;
+		}
 		frac = ((uf << 9) >> 9);
     }else {
 		if((uf >> 22) & 1){
@@ -357,7 +312,6 @@ unsigned floatScale2(unsigned uf) {
 		frac = ((uf << 10) >> 9);
 	}
         
-    result |= sign;
     result |= frac;
     result |= exp;
         
